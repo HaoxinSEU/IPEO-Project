@@ -1,6 +1,6 @@
-# IPEO-Project
+# IPEO 2023 Project: Forest Classification for Swiss Alps
 
-This is the repo for IPEO project 2023.
+This is the repo for our IPEO 2023 Project. 
 
 ## Author
   - Cyril Golaz
