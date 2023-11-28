@@ -28,7 +28,7 @@ def main(data_dir, dest_dir, num_classes, batch_size, num_epochs, keep_feature_e
     # Create training and validation datasets
     image_datasets = {x: DataLoaderSegmentation(data_dir, x) for x in ['train', 'val']}
     # Create training and validation dataloaders
-    dataloaders_dict = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=batch_size, shuffle=True, num_workers=2) for x in ['train', 'val']}
+    dataloaders_dict = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=batch_size, shuffle=True, num_workers=4) for x in ['train', 'val']}
 
     print("Initializing Model...")
 
