@@ -60,7 +60,7 @@ def main(data_dir, dest_dir, num_classes, batch_size, num_epochs, keep_feature_e
                 print("\t", name)
 
     # Observe that all parameters are being optimized
-    optimizer_ft = optim.Adam(params_to_update, lr=0.001, weight_decay=1e-4)
+    optimizer_ft = optim.Adam(params_to_update, lr=1e-4, weight_decay=1e-4)
 
     # Setup the loss function
     criterion = nn.CrossEntropyLoss(weight=(torch.FloatTensor(weight).to(device) if weight else None))

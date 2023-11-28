@@ -6,7 +6,7 @@ def iou(pred, target, n_classes = 3):
     pred = pred.view(-1)
     target = target.view(-1)
 
-    for cls in range(0, n_classes):
+    for cls in range(0, n_classes-1):
         pred_inds = pred == cls
         target_inds = target == cls
         intersection = (pred_inds[target_inds]).long().sum().data.cpu().item()  # Cast to long to prevent overflows
