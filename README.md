@@ -27,5 +27,7 @@ An example is in `./DeepLabV3FineTuning/sources/main_training.py:29~30` and  `./
 
 ## Question
 When doing the test, should we use the original size of images and ground truth?
-Because now to run the pre-trained model, we have to resize images to 512*512. When measuring the accuracy and IoU, should we resize the output to 256*256 or 224*256, and compare with the original ground truth?
+
+Because now to run the pre-trained model, we have to resize images to 512x512. When measuring the accuracy and IoU, should we resize the output to 256*256 or 224*256, and compare with the original ground truth?
+
 _potential problem_: GT size is different for different images, DataLoader can't use batch size > 1. Otherwise how to stack two GT together... Then it's very slow to do the test
