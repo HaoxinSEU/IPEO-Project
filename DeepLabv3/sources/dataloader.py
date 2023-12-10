@@ -46,6 +46,14 @@ class DataLoaderSegmentation(torch.utils.data.dataset.Dataset):
             image = Image.open(img_path)
             label = Image.open(label_path)
 
+            # define padding transform
+            pad_image = transforms.Pad(padding=(0, 0, 256 - image.size[0], 256 - image.size[1]), fill=0)
+            pad_target = transforms.Pad(padding=(0, 0, 256 - label.size[0], 256 - label.size[1]), fill=255)
+
+            # apply padding
+            image = pad_image(image)
+            label = pad_target(label)
+
             # Concatenate image and label, to apply same transformation on both
             image_np = np.asarray(image)
             label_np = np.array(label)
