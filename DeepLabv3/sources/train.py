@@ -8,7 +8,7 @@ from tqdm import tqdm
 from iou import iou
 
 
-def train_model(model, num_classes, dataloaders, criterion, optimizer, device, dest_dir, num_epochs=25):
+def train_model(model, num_classes, dataloaders, criterion, optimizer, scheduler, device, dest_dir, num_epochs=25):
     since = time.time()
 
     val_acc_history = []
@@ -79,6 +79,10 @@ def train_model(model, num_classes, dataloaders, criterion, optimizer, device, d
                 counter = counter + 1
 
             epoch_loss = running_loss / len(dataloaders[phase].dataset)
+
+            # update the learning rate
+            if phase == 'val':
+                scheduler.step(epoch_loss)
 
             # calculate mean IoU, pred_more, pred_less
             running_iou_means = {}

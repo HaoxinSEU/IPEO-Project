@@ -63,6 +63,9 @@ def main(data_dir, dest_dir, num_classes, batch_size, num_epochs, keep_feature_e
 
     # Observe that all parameters are being optimized
     optimizer_ft = optim.Adam(params_to_update, lr=1e-4, weight_decay=1e-4)
+    
+    # setup the scheduler
+    scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer_ft, mode='min', factor=0.1, patience=5, verbose=True)
 
     # Setup the loss function
     criterion = nn.CrossEntropyLoss(weight=(torch.FloatTensor(weight).to(device) if weight else None))
@@ -73,7 +76,7 @@ def main(data_dir, dest_dir, num_classes, batch_size, num_epochs, keep_feature_e
     print("Train...")
 
     # Train and evaluate
-    model_deeplabv3_state_dict, hist = train_model(model_deeplabv3, num_classes, dataloaders_dict, criterion, optimizer_ft, device, dest_dir, num_epochs=num_epochs)
+    model_deeplabv3_state_dict, hist = train_model(model_deeplabv3, num_classes, dataloaders_dict, criterion, optimizer_ft, scheduler, device, dest_dir, num_epochs=num_epochs)
 
     print("Save ...")
     torch.save(model_deeplabv3_state_dict, os.path.join(dest_dir, "best_DeepLabV3_weights.pth"))
