@@ -38,9 +38,9 @@ class DataLoaderSegmentation(torch.utils.data.dataset.Dataset):
                     transforms.ToTensor(),
                     transforms.Normalize([0.485, 0.456, 0.406, 0], [0.229, 0.224, 0.225, 1])
                 ])
-            
+
+    # Duplicate samples from the images that have the minority class        
     def balance_minority_class(self):
-        # Duplicate samples from the images that have the minority class
         for index in range(len(self.img_files)):
             # Load label
             label_path = self.label_files[index]
@@ -50,20 +50,28 @@ class DataLoaderSegmentation(torch.utils.data.dataset.Dataset):
                 # append duplicates to the dataset
                 self.img_files.append(self.img_files[index])
                 self.label_files.append(self.label_files[index])
-
+        
+    # remove samples from the images that have no forest in validation set
     def remove_no_forest_val(self):
-        # remove samples from the images that have no forest in validation set
+        # temporary list to stor label_files and img_files
+        temp_label_files = []
+        temp_img_files = []
+
         for index in range(len(self.img_files)):
             # Load label
             label_path = self.label_files[index]
             label = Image.open(label_path)
             label_np = np.array(label)
-            if (label_np==1).sum() == 0:
-                # remove from the dataset
-                self.img_files.pop(index)
-                self.label_files.pop(index)
-                
 
+            if (label_np==1).sum() != 0:
+                # remove from the dataset
+                temp_label_files.append(self.label_files[index])
+                temp_img_files.append(self.img_files[index])
+            
+        # update the dataset
+        self.label_files = temp_label_files
+        self.img_files = temp_img_files
+                
     def __getitem__(self, index):
             img_path = self.img_files[index]
             label_path = self.label_files[index]
