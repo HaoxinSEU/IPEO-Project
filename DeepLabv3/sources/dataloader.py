@@ -51,6 +51,19 @@ class DataLoaderSegmentation(torch.utils.data.dataset.Dataset):
                 self.img_files.append(self.img_files[index])
                 self.label_files.append(self.label_files[index])
 
+    def remove_no_forest_val(self):
+        # remove samples from the images that have no forest in validation set
+        for index in range(len(self.img_files)):
+            # Load label
+            label_path = self.label_files[index]
+            label = Image.open(label_path)
+            label_np = np.array(label)
+            if (label_np==1).sum() == 0:
+                # remove from the dataset
+                self.img_files.pop(index)
+                self.label_files.pop(index)
+                
+
     def __getitem__(self, index):
             img_path = self.img_files[index]
             label_path = self.label_files[index]

@@ -29,6 +29,8 @@ def main(data_dir, dest_dir, num_classes, batch_size, num_epochs, keep_feature_e
     image_datasets = {x: DataLoaderSegmentation(data_dir, x) for x in ['train', 'val']}
     # Balance the training dataset
     image_datasets['train'].balance_minority_class()
+    # Remove samples from the validation dataset that have no forest
+    image_datasets['val'].remove_no_forest_val()
     # Create training and validation dataloaders
     dataloaders_dict = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=batch_size, shuffle=True, num_workers=4) for x in ['train', 'val']}
 
