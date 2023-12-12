@@ -22,7 +22,7 @@ Since images are in different sizes, e.g., 256x256, 232x256, 256x232. So we use 
 We also have data augmentation by applying random vertical and horizon flips when loading images.
 
 ## Class Imbalance
-To fight against class imbalance, we resample images with more forest labels. After resampling, the ratio between #non-forest pixel and #forest pixels is 1.14
+To fight against class imbalance, we resample images with more forest labels. After resampling, the ratio between #non-forest pixel and #forest pixels is 1.22
 
 ## How to use Dataset class
 - Copy `./DeepLabV3FineTuning/sources/dataloader.py` into your folder
