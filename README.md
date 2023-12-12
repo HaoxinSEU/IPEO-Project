@@ -17,7 +17,12 @@ We first remove images that have more than 30% non-labeled pixels in the trainin
 You can find the processed datasets in these different ways [here](https://drive.google.com/drive/folders/1hEs_I2NBof5FsnYbACwwSZ5u08B1r-KB?usp=sharing).
 
 ## Data Preprocessing
-Since images are in different sizes, e.g., 256x256, 232x256, 256x232. So we use zero-padding to pad all images to the same size of 256x256. We also have data augmentation by applying random vertical and horizon flips when loading images.
+Since images are in different sizes, e.g., 256x256, 232x256, 256x232. So we use zero-padding to pad all images to the same size of 256x256. 
+
+We also have data augmentation by applying random vertical and horizon flips when loading images.
+
+## Class Imbalance
+To fight against class imbalance, we resample images with more forest labels. After resampling, the ratio between #non-forest pixel and #forest pixels is 1.14
 
 ## How to use Dataset class
 - Copy `./DeepLabV3FineTuning/sources/dataloader.py` into your folder
