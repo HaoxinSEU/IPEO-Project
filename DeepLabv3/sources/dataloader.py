@@ -38,6 +38,18 @@ class DataLoaderSegmentation(torch.utils.data.dataset.Dataset):
                     transforms.ToTensor(),
                     transforms.Normalize([0.485, 0.456, 0.406, 0], [0.229, 0.224, 0.225, 1])
                 ])
+            
+    def balance_minority_class(self):
+        # Duplicate samples from the images that have the minority class
+        for index in range(len(self.img_files)):
+            # Load label
+            label_path = self.label_files[index]
+            label = Image.open(label_path)
+            label_np = np.array(label)
+            if (label_np==1).sum() > (label_np==0).sum():
+                # append duplicates to the dataset
+                self.img_files.append(self.img_files[index])
+                self.label_files.append(self.label_files[index])
 
     def __getitem__(self, index):
             img_path = self.img_files[index]

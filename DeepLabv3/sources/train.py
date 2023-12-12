@@ -30,7 +30,14 @@ def train_model(model, num_classes, dataloaders, criterion, optimizer, device, d
                 model.eval()   # Set model to evaluate mode
 
             running_loss = 0.0
-            running_iou_means = []
+            running_ious = {}
+            running_mores = {}
+            running_lesss = {}
+
+            for i in range(0, num_classes-1):
+                running_ious[i] = []
+                running_mores[i] = []
+                running_lesss[i] = []
 
             # Iterate over data.
             for inputs, labels in tqdm(dataloaders[phase]):
@@ -59,20 +66,38 @@ def train_model(model, num_classes, dataloaders, criterion, optimizer, device, d
                         optimizer.step()
 
                 # statistics
-                iou_mean = iou(preds, labels, num_classes).mean()
                 running_loss += loss.item() * inputs.size(0)
-                running_iou_means.append(iou_mean)
+
+                # calculate IoU, pred_more, pred_less for each class
+                for cls in range(0, num_classes-1):
+                    ious, pred_more_ratio, pred_less_ratio = iou(preds, labels, cls)
+                    running_ious[cls].append(ious)
+                    running_mores[cls].append(pred_more_ratio)
+                    running_lesss[cls].append(pred_less_ratio)
 
                 # Increment counter
                 counter = counter + 1
 
             epoch_loss = running_loss / len(dataloaders[phase].dataset)
-            if running_iou_means is not None:
-                epoch_acc = np.array(running_iou_means).mean()
-            else:
-                epoch_acc = 0.
 
-            print('{} Loss: {:.4f} Acc: {:.4f}'.format(phase, epoch_loss, epoch_acc))
+            # calculate mean IoU, pred_more, pred_less
+            running_iou_means = {}
+
+            print('#############################################')
+            print("running_ious[0] shape", np.concatenate(running_ious[0]).shape)
+            print("running_ious[1] shape", np.concatenate(running_ious[1]).shape)
+            print("running_mores[1] shape", np.concatenate(running_mores[1]).shape)
+            print("running_lesss[1] shape", np.concatenate(running_lesss[1]).shape)
+            
+            running_iou_means[0] = np.nanmean(np.concatenate(running_ious[0]))
+            running_iou_means[1] = np.nanmean(np.concatenate(running_ious[1]))
+            running_more_means = np.nanmean(np.concatenate(running_mores[1]))
+            running_less_means = np.nanmean(np.concatenate(running_lesss[1]))
+
+            epoch_acc = (running_iou_means[0] + running_iou_means[1]) / 2
+            print('{} Loss: {:.4f} Non-forest IoU: {:.4f} Forest IoU: {:.4f} mIoU: {:.4f}'.format(phase, epoch_loss, running_iou_means[0], running_iou_means[1], epoch_acc))
+            print('More prediction on forest:  {:.4f}, less prediction on forest:  {:.4f}'.format(running_more_means, running_less_means))
+            print('#############################################')
 
             # deep copy the model
             if phase == 'val' and epoch_acc > best_acc:

@@ -30,7 +30,12 @@ test_dataloader = torch.utils.data.DataLoader(test_dataset, batch_size=8, shuffl
 
 print("Starting to do inference...")
 
-running_iou_means = []
+running_iou_0 = []
+running_iou_1 = []
+running_pred_more_ratio_1 = []
+running_pred_more_ratio_0 = []
+running_pred_less_ratio_1 = []
+running_pred_less_ratio_0 = []
 
 # Iterate over test set
 for inputs, labels in tqdm(test_dataloader):
@@ -42,8 +47,18 @@ for inputs, labels in tqdm(test_dataloader):
     _, preds = torch.max(outputs, 1)
 
     # statistics
-    iou_mean = iou(preds, labels, num_classes).mean()
-    running_iou_means.append(iou_mean)
+    ious_0, pred_more_ratio_0, pred_less_ratio_0  = iou(preds, labels, 0)
+    ious_1, pred_more_ratio_1, pred_less_ratio_1 = iou(preds, labels, 1)
 
-test_iou = np.array(running_iou_means).mean()
-print('Test mIoU is: ', test_iou)
+    running_iou_0.append(ious_0)
+    running_iou_1.append(ious_1)
+    running_pred_more_ratio_1.append(pred_more_ratio_1)
+    running_pred_more_ratio_0.append(pred_more_ratio_0)
+    running_pred_less_ratio_1.append(pred_less_ratio_1)
+    running_pred_less_ratio_1.append(pred_less_ratio_0)
+
+
+test_iou_0 = np.nanmean(np.array(running_iou_0))
+test_iou_1 = np.nanmean(np.array(running_iou_1))
+print('Test Non-forest IoU is: ', test_iou_0)
+print('Test Forest IoU is: ', test_iou_1)
