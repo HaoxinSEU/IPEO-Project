@@ -5,18 +5,17 @@ import time
 import copy
 from tqdm import tqdm
 
+# local import
 from iou import iou
 
 
 def train_model(model, num_classes, dataloaders, criterion, optimizer, scheduler, device, dest_dir, num_epochs=25):
     since = time.time()
 
-    val_acc_history = []
+    val_IoU_history = []
 
     best_model_state_dict = copy.deepcopy(model.state_dict())
-    best_acc = 0.0
-
-    counter = 0
+    best_IoU = 0.0
 
     for epoch in range(1, num_epochs+1):
         print('Epoch {}/{}'.format(epoch, num_epochs))
@@ -31,13 +30,9 @@ def train_model(model, num_classes, dataloaders, criterion, optimizer, scheduler
 
             running_loss = 0.0
             running_ious = {}
-            running_mores = {}
-            running_lesss = {}
 
             for i in range(0, num_classes-1):
                 running_ious[i] = []
-                running_mores[i] = []
-                running_lesss[i] = []
 
             # Iterate over data.
             for inputs, labels in tqdm(dataloaders[phase]):
@@ -70,13 +65,8 @@ def train_model(model, num_classes, dataloaders, criterion, optimizer, scheduler
 
                 # calculate IoU, pred_more, pred_less for each class
                 for cls in range(0, num_classes-1):
-                    ious, pred_more_ratio, pred_less_ratio = iou(preds, labels, cls)
+                    ious, _, _ = iou(preds, labels, cls)
                     running_ious[cls].append(ious)
-                    running_mores[cls].append(pred_more_ratio)
-                    running_lesss[cls].append(pred_less_ratio)
-
-                # Increment counter
-                counter = counter + 1
 
             epoch_loss = running_loss / len(dataloaders[phase].dataset)
 
@@ -88,27 +78,19 @@ def train_model(model, num_classes, dataloaders, criterion, optimizer, scheduler
             running_iou_means = {}
 
             print('#############################################')
-            print("running_ious[0] shape", np.concatenate(running_ious[0]).shape)
-            print("running_ious[1] shape", np.concatenate(running_ious[1]).shape)
-            print("running_mores[1] shape", np.concatenate(running_mores[1]).shape)
-            print("running_lesss[1] shape", np.concatenate(running_lesss[1]).shape)
-            
             running_iou_means[0] = np.nanmean(np.concatenate(running_ious[0]))
             running_iou_means[1] = np.nanmean(np.concatenate(running_ious[1]))
-            running_more_means = np.nanmean(np.concatenate(running_mores[1]))
-            running_less_means = np.nanmean(np.concatenate(running_lesss[1]))
 
-            epoch_acc = (running_iou_means[0] + running_iou_means[1]) / 2
-            print('{} Loss: {:.4f} Non-forest IoU: {:.4f} Forest IoU: {:.4f} mIoU: {:.4f}'.format(phase, epoch_loss, running_iou_means[0], running_iou_means[1], epoch_acc))
-            print('More prediction on forest:  {:.4f}, less prediction on forest:  {:.4f}'.format(running_more_means, running_less_means))
+            mIoU = (running_iou_means[0] + running_iou_means[1]) / 2
+            print('{} Loss: {:.4f} Non-forest IoU: {:.4f} Forest IoU: {:.4f} mIoU: {:.4f}'.format(phase, epoch_loss, running_iou_means[0], running_iou_means[1], mIoU))
             print('#############################################')
 
             # deep copy the model
-            if phase == 'val' and epoch_acc > best_acc:
-                best_acc = epoch_acc
+            if phase == 'val' and running_iou_means[1] > best_IoU:
+                best_IoU = running_iou_means[1]
                 best_model_state_dict = copy.deepcopy(model.state_dict())
             if phase == 'val':
-                val_acc_history.append(epoch_acc)
+                val_IoU_history.append(mIoU)
 
             # Save current model every 20 epochs
             if 0 == epoch % 20:
@@ -116,15 +98,11 @@ def train_model(model, num_classes, dataloaders, criterion, optimizer, scheduler
                 print(f"Save current model : {current_model_path}")
                 torch.save(model.state_dict(), current_model_path)
 
-                current_best_model_path = os.path.join(dest_dir, f"checkpoint_{epoch:04}_DeepLabV3_weight_best.pth")
-                print(f"Save current best model : {current_best_model_path}")
-                torch.save(best_model_state_dict, current_best_model_path)
-
         print()
 
     time_elapsed = time.time() - since
     print('Training complete in {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
-    print('Best val Acc: {:4f}'.format(best_acc))
+    print('Best val IoU: {:4f}'.format(best_IoU))
 
     # load best model weights
-    return best_model_state_dict, val_acc_history
+    return best_model_state_dict, val_IoU_history

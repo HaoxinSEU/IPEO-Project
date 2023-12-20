@@ -1,6 +1,5 @@
 import torch
 from torchvision import transforms
-from torchvision.transforms import InterpolationMode
 import numpy as np
 from PIL import Image
 import os
@@ -11,6 +10,7 @@ import argparse
 # local import
 import custom_model
 from iou import iou
+
 
 # test dataset
 class TestDatasetSegmentation(torch.utils.data.dataset.Dataset):
@@ -28,7 +28,7 @@ class TestDatasetSegmentation(torch.utils.data.dataset.Dataset):
             self.label_files.append(os.path.join(folder_path, 'target', 'test', label_filename_with_ext))
 
         self.transforms = transforms.Compose([
-            transforms.Resize(size=(512, 512), interpolation=InterpolationMode.BILINEAR),
+            transforms.Resize(size=(512, 512), interpolation=transforms.InterpolationMode.NEAREST),
             transforms.ToTensor(),
             transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
         ])
@@ -68,6 +68,7 @@ def main(data_dir, weights_dir, num_classes):
 
     # load the test set
     test_dataset = TestDatasetSegmentation(data_dir)
+    # we fix the batch size to 1, because the images have different sizes
     test_dataloader = torch.utils.data.DataLoader(test_dataset, batch_size=1, shuffle=False, num_workers=2)
 
     print("Starting to do inference...")
@@ -104,7 +105,6 @@ def main(data_dir, weights_dir, num_classes):
         running_pred_more_ratio_0.append(pred_more_ratio_0)
         running_pred_less_ratio_1.append(pred_less_ratio_1)
         running_pred_less_ratio_0.append(pred_less_ratio_0)
-
 
     test_iou_0 = np.nanmean(np.array(running_iou_0))
     test_iou_1 = np.nanmean(np.array(running_iou_1))

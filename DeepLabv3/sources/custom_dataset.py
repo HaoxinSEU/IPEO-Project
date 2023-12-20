@@ -1,10 +1,10 @@
 import torch
 import numpy as np
 from torchvision import transforms
-from torchvision.transforms import InterpolationMode
 import os
 import glob
 from PIL import Image
+
 
 # custom Dataset class to load our dataset
 # used for train, val, and test
@@ -22,10 +22,10 @@ class DatasetSegmentation(torch.utils.data.dataset.Dataset):
             label_filename_with_ext = f"target_{image_filename[1]}.tif"
             self.label_files.append(os.path.join(folder_path, 'target', mode, label_filename_with_ext))
 
-        if "val" == mode or "test" == mode:
-            # just normalize and resize (512x512) for validation and test
+        if "val" == mode:
+            # just normalize and resize (512x512) for validation
             self.transforms = transforms.Compose([
-                transforms.Resize(size=(512, 512), interpolation=InterpolationMode.NEAREST),
+                transforms.Resize(size=(512, 512), interpolation=transforms.InterpolationMode.NEAREST),
                 transforms.ToTensor(),
                 transforms.Normalize([0.485, 0.456, 0.406, 0], [0.229, 0.224, 0.225, 1])
             ])
@@ -34,7 +34,7 @@ class DatasetSegmentation(torch.utils.data.dataset.Dataset):
             self.transforms = transforms.Compose([
                     transforms.RandomHorizontalFlip(),
                     transforms.RandomVerticalFlip(),
-                    transforms.Resize(size=(512, 512), interpolation=InterpolationMode.NEAREST),
+                    transforms.Resize(size=(512, 512), interpolation=transforms.InterpolationMode.NEAREST),
                     transforms.ToTensor(),
                     transforms.Normalize([0.485, 0.456, 0.406, 0], [0.229, 0.224, 0.225, 1])
                 ])
@@ -79,13 +79,13 @@ class DatasetSegmentation(torch.utils.data.dataset.Dataset):
         image = Image.open(img_path)
         label = Image.open(label_path)
 
-        # define padding transform
-        pad_image = transforms.Pad(padding=(0, 0, 256 - image.size[0], 256 - image.size[1]), fill=0)
-        pad_target = transforms.Pad(padding=(0, 0, 256 - label.size[0], 256 - label.size[1]), fill=255)
+        # # define padding transform
+        # pad_image = transforms.Pad(padding=(0, 0, 256 - image.size[0], 256 - image.size[1]), fill=0)
+        # pad_target = transforms.Pad(padding=(0, 0, 256 - label.size[0], 256 - label.size[1]), fill=255)
 
-        # apply padding
-        image = pad_image(image)
-        label = pad_target(label)
+        # # apply padding
+        # image = pad_image(image)
+        # label = pad_target(label)
 
         # Concatenate image and label, to apply same transformation on both
         image_np = np.asarray(image)
