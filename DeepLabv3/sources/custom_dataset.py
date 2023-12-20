@@ -8,9 +8,9 @@ from PIL import Image
 
 # custom Dataset class to load our dataset
 # used for train, val, and test
-class DataLoaderSegmentation(torch.utils.data.dataset.Dataset):
+class DatasetSegmentation(torch.utils.data.dataset.Dataset):
     def __init__(self, folder_path, mode):
-        super(DataLoaderSegmentation, self).__init__()
+        super(DatasetSegmentation, self).__init__()
         # get all image filenames
         self.img_files = glob.glob(os.path.join(folder_path, 'input', mode, '*.*'))
 
@@ -73,45 +73,45 @@ class DataLoaderSegmentation(torch.utils.data.dataset.Dataset):
         self.img_files = temp_img_files
                 
     def __getitem__(self, index):
-            img_path = self.img_files[index]
-            label_path = self.label_files[index]
+        img_path = self.img_files[index]
+        label_path = self.label_files[index]
 
-            image = Image.open(img_path)
-            label = Image.open(label_path)
+        image = Image.open(img_path)
+        label = Image.open(label_path)
 
-            # define padding transform
-            pad_image = transforms.Pad(padding=(0, 0, 256 - image.size[0], 256 - image.size[1]), fill=0)
-            pad_target = transforms.Pad(padding=(0, 0, 256 - label.size[0], 256 - label.size[1]), fill=255)
+        # define padding transform
+        pad_image = transforms.Pad(padding=(0, 0, 256 - image.size[0], 256 - image.size[1]), fill=0)
+        pad_target = transforms.Pad(padding=(0, 0, 256 - label.size[0], 256 - label.size[1]), fill=255)
 
-            # apply padding
-            image = pad_image(image)
-            label = pad_target(label)
+        # apply padding
+        image = pad_image(image)
+        label = pad_target(label)
 
-            # Concatenate image and label, to apply same transformation on both
-            image_np = np.asarray(image)
-            label_np = np.array(label)
-            label_np[label_np > 1] = 2  # replace 255 and 244 by 2 in the label, so that crossEntropy can work
-            new_shape = (image_np.shape[0], image_np.shape[1], image_np.shape[2] + 1)
-            image_and_label_np = np.zeros(new_shape, image_np.dtype)
-            image_and_label_np[:, :, 0:3] = image_np
-            image_and_label_np[:, :, 3] = label_np
+        # Concatenate image and label, to apply same transformation on both
+        image_np = np.asarray(image)
+        label_np = np.array(label)
+        label_np[label_np > 1] = 2  # replace 255 and 244 by 2 in the label, so that crossEntropy can work
+        new_shape = (image_np.shape[0], image_np.shape[1], image_np.shape[2] + 1)
+        image_and_label_np = np.zeros(new_shape, image_np.dtype)
+        image_and_label_np[:, :, 0:3] = image_np
+        image_and_label_np[:, :, 3] = label_np
 
-            # Convert to PIL
-            image_and_label = Image.fromarray(image_and_label_np)
+        # Convert to PIL
+        image_and_label = Image.fromarray(image_and_label_np)
 
-            # Apply Transforms
-            image_and_label = self.transforms(image_and_label)
+        # Apply Transforms
+        image_and_label = self.transforms(image_and_label)
 
-            # Extract image and label
-            image = image_and_label[0:3, :, :]
-            label = image_and_label[3, :, :].unsqueeze(0)
+        # Extract image and label
+        image = image_and_label[0:3, :, :]
+        label = image_and_label[3, :, :].unsqueeze(0)
 
-            # Normalize back from [0, 1] to [0, 255]
-            label = label * 255
-            # Convert to int64 and remove second dimension
-            label = label.long().squeeze()
+        # Normalize back from [0, 1] to [0, 255]
+        label = label * 255
+        # Convert to int64 and remove second dimension
+        label = label.long().squeeze()
 
-            return image, label
+        return image, label
 
     def __len__(self):
         return len(self.img_files)

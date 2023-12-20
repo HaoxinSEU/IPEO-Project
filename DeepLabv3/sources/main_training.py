@@ -7,18 +7,9 @@ import argparse
 import pathlib
 
 # Local import
-from dataloader import DataLoaderSegmentation
+from custom_dataset import DatasetSegmentation
 from custom_model import initialize_model
 from train import train_model
-
-print("PyTorch Version: ", torch.__version__)
-print("Torchvision Version: ", torchvision.__version__)
-
-"""
-    Version requirements:
-        PyTorch Version:  1.4.0
-        Torchvision Version:  0.5.0
-"""
 
 
 def main(data_dir, dest_dir, num_classes, batch_size, num_epochs, keep_feature_extract, weight):
@@ -26,7 +17,7 @@ def main(data_dir, dest_dir, num_classes, batch_size, num_epochs, keep_feature_e
     print("Initializing Datasets and Dataloaders...")
 
     # Create training and validation datasets
-    image_datasets = {x: DataLoaderSegmentation(data_dir, x) for x in ['train', 'val']}
+    image_datasets = {x: DatasetSegmentation(data_dir, x) for x in ['train', 'val']}
     # Balance the training dataset
     image_datasets['train'].balance_minority_class()
     # Remove samples from the validation dataset that have no forest
@@ -46,10 +37,10 @@ def main(data_dir, dest_dir, num_classes, batch_size, num_epochs, keep_feature_e
     model_deeplabv3 = model_deeplabv3.to(device)
 
     # Gather the parameters to be optimized/updated in this run. If we are
-    #  finetuning we will be updating all parameters. However, if we are
-    #  doing feature extract method, we will only update the parameters
-    #  that we have just initialized, i.e. the parameters with requires_grad
-    #  is True.
+    # finetuning we will be updating all parameters. However, if we are
+    # doing feature extract method, we will only update the parameters
+    # that we have just initialized
+
     params_to_update = model_deeplabv3.parameters()
     print("Params to learn:")
     if keep_feature_extract:
