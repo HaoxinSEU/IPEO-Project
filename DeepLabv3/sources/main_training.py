@@ -88,10 +88,10 @@ def args_preprocess():
     # Command line arguments
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "data_dir", help='Specify the dataset directory path, should contain train/Images, train/Labels, val/Images and val/Labels')
+        "data_dir", help='Specify the dataset directory path, should contain input/train, target/train, input/val and target/val')
     parser.add_argument(
         "dest_dir", help='Specify the  directory where model weights shall be stored.')
-    parser.add_argument("--num_classes", default=5, type=int, help="Number of classes in the dataset, index 0 for no-label should be included in the count")
+    parser.add_argument("--num_classes", default=3, type=int, help="Number of classes in the dataset, no-label should be included in the count")
     parser.add_argument("--epochs", default=100, type=int, help="Number of epochs to train for")
     parser.add_argument("--batch_size", default=16, type=int, help="Batch size for training (change depending on how much memory you have)")
     parser.add_argument("--keep_feature_extract", action="store_true", help="Flag for feature extracting. When False, we finetune the whole model, when True we only update the reshaped layer params")

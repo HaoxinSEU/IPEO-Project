@@ -1,64 +1,140 @@
 import torch
+from torchvision import transforms
+from torchvision.transforms import InterpolationMode
 import numpy as np
+from PIL import Image
+import os
+import glob
 from tqdm import tqdm
+import argparse
 
 # local import
 import custom_model
-from dataloader import DataLoaderSegmentation
 from iou import iou
 
-# file path
-data_dir = "../example_forest"
-weights_dir = "../saved_model_weights/best_DeepLabV3_weights.pth"
-num_classes = 3
+# test dataset
+class TestDatasetSegmentation(torch.utils.data.dataset.Dataset):
+    def __init__(self, folder_path):
+        super(TestDatasetSegmentation, self).__init__()
+        # get all image filenames
+        self.img_files = glob.glob(os.path.join(folder_path, 'input', 'test', '*.*'))
 
-# detect if we have GPU or not
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        # get all targets (GT)
+        self.label_files = []
+        for img_path in self.img_files:
+            image_filename, _ = os.path.splitext(os.path.basename(img_path))
+            image_filename = image_filename.split('_', 1)  # get image ID
+            label_filename_with_ext = f"target_{image_filename[1]}.tif"
+            self.label_files.append(os.path.join(folder_path, 'target', 'test', label_filename_with_ext))
 
-# import our trained model
-model = custom_model.initialize_model(num_classes, keep_feature_extract=True)
-state_dict = torch.load(weights_dir, map_location=device)
-model = model.to(device)
-model.load_state_dict(state_dict)
+        self.transforms = transforms.Compose([
+            transforms.Resize(size=(512, 512), interpolation=InterpolationMode.NEAREST),
+            transforms.ToTensor(),
+            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+        ])
+        
+    def __getitem__(self, index):
+        img_path = self.img_files[index]
+        label_path = self.label_files[index]
 
-# set the model in evaluation mode
-model.eval()
+        image = Image.open(img_path)
+        label = Image.open(label_path)
 
-# load the test set
-test_dataset = DataLoaderSegmentation(data_dir, 'test')
-test_dataloader = torch.utils.data.DataLoader(test_dataset, batch_size=8, shuffle=False, num_workers=2)
+        # define padding transform
+        pad_image = transforms.Pad(padding=(0, 0, 256 - image.size[0], 256 - image.size[1]), fill=0)
+        pad_target = transforms.Pad(padding=(0, 0, 256 - label.size[0], 256 - label.size[1]), fill=255)
 
-print("Starting to do inference...")
+        # apply padding
+        image = pad_image(image)
+        label = pad_target(label)
 
-running_iou_0 = []
-running_iou_1 = []
-running_pred_more_ratio_1 = []
-running_pred_more_ratio_0 = []
-running_pred_less_ratio_1 = []
-running_pred_less_ratio_0 = []
+        # replace 255 and 244 by 2 in the label
+        label_np = np.array(label)
+        label_np[label_np > 1] = 2  
 
-# Iterate over test set
-for inputs, labels in tqdm(test_dataloader):
-    inputs = inputs.to(device)
-    labels = labels.to(device)
+        # apply transforms
+        image = self.transforms(image)
 
-    # do the inference
-    outputs = model(inputs)["out"]
-    _, preds = torch.max(outputs, 1)
+        return image, label_np
 
-    # statistics
-    ious_0, pred_more_ratio_0, pred_less_ratio_0  = iou(preds, labels, 0)
-    ious_1, pred_more_ratio_1, pred_less_ratio_1 = iou(preds, labels, 1)
-
-    running_iou_0.append(ious_0)
-    running_iou_1.append(ious_1)
-    running_pred_more_ratio_1.append(pred_more_ratio_1)
-    running_pred_more_ratio_0.append(pred_more_ratio_0)
-    running_pred_less_ratio_1.append(pred_less_ratio_1)
-    running_pred_less_ratio_1.append(pred_less_ratio_0)
+    def __len__(self):
+        return len(self.img_files)
 
 
-test_iou_0 = np.nanmean(np.array(running_iou_0))
-test_iou_1 = np.nanmean(np.array(running_iou_1))
-print('Test Non-forest IoU is: ', test_iou_0)
-print('Test Forest IoU is: ', test_iou_1)
+def main(data_dir, weights_dir, num_classes):
+    # detect if we have GPU or not
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
+    # import our trained model
+    model = custom_model.initialize_model(num_classes, keep_feature_extract=True)
+    state_dict = torch.load(weights_dir, map_location=device)
+    model = model.to(device)
+    model.load_state_dict(state_dict)
+
+    # set the model in evaluation mode
+    model.eval()
+
+    # load the test set
+    test_dataset = TestDatasetSegmentation(data_dir)
+    test_dataloader = torch.utils.data.DataLoader(test_dataset, batch_size=1, shuffle=False, num_workers=2)
+
+    print("Starting to do inference...")
+
+    running_iou_0 = []
+    running_iou_1 = []
+    running_pred_more_ratio_1 = []
+    running_pred_more_ratio_0 = []
+    running_pred_less_ratio_1 = []
+    running_pred_less_ratio_0 = []
+
+    # Iterate over test set
+    for inputs, labels in tqdm(test_dataloader):
+        inputs = inputs.to(device)
+        labels = labels.to(device)
+
+        # do the inference
+        outputs = model(inputs)["out"]
+
+        # select the prediction only in the first two classes
+        outputs = outputs[:, :num_classes-1, :, :]
+        _, preds = torch.max(outputs, 1)
+
+        # convert the prediction from 512x512 to 256x256 by resizing
+        preds = torch.nn.functional.interpolate(preds.unsqueeze(1).float(), size=(256, 256), mode="nearest").squeeze(1).long()
+
+        # statistics
+        ious_0, pred_more_ratio_0, pred_less_ratio_0 = iou(preds, labels, 0)
+        ious_1, pred_more_ratio_1, pred_less_ratio_1 = iou(preds, labels, 1)
+
+        running_iou_0.append(ious_0)
+        running_iou_1.append(ious_1)
+        running_pred_more_ratio_1.append(pred_more_ratio_1)
+        running_pred_more_ratio_0.append(pred_more_ratio_0)
+        running_pred_less_ratio_1.append(pred_less_ratio_1)
+        running_pred_less_ratio_0.append(pred_less_ratio_0)
+
+
+    test_iou_0 = np.nanmean(np.array(running_iou_0))
+    test_iou_1 = np.nanmean(np.array(running_iou_1))
+    print('Test Non-forest IoU is: ', test_iou_0)
+    print('Test Forest IoU is: ', test_iou_1)
+
+
+# parse the arguments
+def args_preprocess():
+    # Command line arguments
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "data_dir", help='Specify the dataset directory path, should contain input/test and target/test')
+    parser.add_argument(
+        "weights_dir", help='Specify the  directory where model weights shall be stored.')
+    parser.add_argument(
+        "--num_classes", default=3, type=int, help="Number of classes in the dataset, no-label should be included in the count")
+    
+    args = parser.parse_args()
+
+    main(args.data_dir, args.weights_dir, args.num_classes)
+
+
+if __name__ == "__main__":
+    args_preprocess()
