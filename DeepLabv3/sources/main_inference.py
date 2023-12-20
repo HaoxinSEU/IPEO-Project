@@ -28,7 +28,7 @@ class TestDatasetSegmentation(torch.utils.data.dataset.Dataset):
             self.label_files.append(os.path.join(folder_path, 'target', 'test', label_filename_with_ext))
 
         self.transforms = transforms.Compose([
-            transforms.Resize(size=(512, 512), interpolation=InterpolationMode.NEAREST),
+            transforms.Resize(size=(512, 512), interpolation=InterpolationMode.BILINEAR),
             transforms.ToTensor(),
             transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
         ])
@@ -39,14 +39,6 @@ class TestDatasetSegmentation(torch.utils.data.dataset.Dataset):
 
         image = Image.open(img_path)
         label = Image.open(label_path)
-
-        # define padding transform
-        pad_image = transforms.Pad(padding=(0, 0, 256 - image.size[0], 256 - image.size[1]), fill=0)
-        pad_target = transforms.Pad(padding=(0, 0, 256 - label.size[0], 256 - label.size[1]), fill=255)
-
-        # apply padding
-        image = pad_image(image)
-        label = pad_target(label)
 
         # replace 255 and 244 by 2 in the label
         label_np = np.array(label)
@@ -99,8 +91,8 @@ def main(data_dir, weights_dir, num_classes):
         outputs = outputs[:, :num_classes-1, :, :]
         _, preds = torch.max(outputs, 1)
 
-        # convert the prediction from 512x512 to 256x256 by resizing
-        preds = torch.nn.functional.interpolate(preds.unsqueeze(1).float(), size=(256, 256), mode="nearest").squeeze(1).long()
+        # convert the prediction from 512x512 to label's size
+        preds = torch.nn.functional.interpolate(preds.unsqueeze(1).float(), size=(labels.size()[-2:]), mode="nearest").squeeze(1).long()
 
         # statistics
         ious_0, pred_more_ratio_0, pred_less_ratio_0 = iou(preds, labels, 0)
