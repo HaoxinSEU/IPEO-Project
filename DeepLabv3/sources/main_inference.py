@@ -10,12 +10,13 @@ import argparse
 # local import
 import custom_model
 from iou import iou
+from accuracy import count_for_user_accuracy, count_for_producer_accuracy, count_for_overall_accuracy
 
 
 # test dataset
-class TestDatasetSegmentation(torch.utils.data.dataset.Dataset):
+class InferenceDataset(torch.utils.data.dataset.Dataset):
     def __init__(self, folder_path, mode):
-        super(TestDatasetSegmentation, self).__init__()
+        super(InferenceDataset, self).__init__()
         # get all image filenames
         self.img_files = glob.glob(os.path.join(folder_path, 'input', mode, '*.*'))
 
@@ -67,18 +68,19 @@ def main(data_dir, data_mode, weights_dir, num_classes):
     model.eval()
 
     # load the test set
-    test_dataset = TestDatasetSegmentation(data_dir, data_mode)
+    test_dataset = InferenceDataset(data_dir, data_mode)
     # we fix the batch size to 1, because the images have different sizes
     test_dataloader = torch.utils.data.DataLoader(test_dataset, batch_size=1, shuffle=False, num_workers=2)
 
     print("Starting to do inference...")
 
-    running_iou_0 = []
-    running_iou_1 = []
-    running_pred_more_ratio_1 = []
-    running_pred_more_ratio_0 = []
-    running_pred_less_ratio_1 = []
-    running_pred_less_ratio_0 = []
+    running_iou = [[] for i in range(0, num_classes-1)]
+    running_ua_correct_count = [0 for i in range(0, num_classes-1)]
+    running_ua_total_count = [0 for i in range(0, num_classes-1)]
+    running_pa_correct_count = [0 for i in range(0, num_classes-1)]
+    running_pa_total_count = [0 for i in range(0, num_classes-1)]
+    running_oa_correct_count = 0
+    running_oa_total_count = 0
 
     # Iterate over test set
     for inputs, labels in tqdm(test_dataloader):
@@ -95,21 +97,41 @@ def main(data_dir, data_mode, weights_dir, num_classes):
         # convert the prediction from 512x512 to label's size
         preds = torch.nn.functional.interpolate(preds.unsqueeze(1).float(), size=(labels.size()[-2:]), mode="nearest").squeeze(1).long()
 
-        # statistics
-        ious_0, pred_more_ratio_0, pred_less_ratio_0 = iou(preds, labels, 0)
-        ious_1, pred_more_ratio_1, pred_less_ratio_1 = iou(preds, labels, 1)
+        # IoU calculation
+        for i in range(0, num_classes-1):
+            ious, _, _ = iou(preds, labels, i)
+            running_iou[i].append(ious)
 
-        running_iou_0.append(ious_0)
-        running_iou_1.append(ious_1)
-        running_pred_more_ratio_1.append(pred_more_ratio_1)
-        running_pred_more_ratio_0.append(pred_more_ratio_0)
-        running_pred_less_ratio_1.append(pred_less_ratio_1)
-        running_pred_less_ratio_0.append(pred_less_ratio_0)
+        # accuracy calculation for each class, without no-label
+        for i in range(0, num_classes-1):
+            ua_correct_count, ua_total_count = count_for_user_accuracy(preds, labels, i)
+            pa_correct_count, pa_total_count = count_for_producer_accuracy(preds, labels, i)
+            running_ua_correct_count[i] += ua_correct_count
+            running_ua_total_count[i] += ua_total_count
+            running_pa_correct_count[i] += pa_correct_count
+            running_pa_total_count[i] += pa_total_count
 
-    test_iou_0 = np.nanmean(np.array(running_iou_0))
-    test_iou_1 = np.nanmean(np.array(running_iou_1))
-    print('Test Non-forest IoU is: ', test_iou_0)
-    print('Test Forest IoU is: ', test_iou_1)
+        oa_correct_count, oa_total_count = count_for_overall_accuracy(preds, labels)
+        running_oa_correct_count += oa_correct_count
+        running_oa_total_count += oa_total_count
+
+    # print the accuracy
+    user_accuracy_0 = running_ua_correct_count[0] / running_ua_total_count[0]
+    user_accuracy_1 = running_ua_correct_count[1] / running_ua_total_count[1]
+    producer_accuracy_0 = running_pa_correct_count[0] / running_pa_total_count[0]
+    producer_accuracy_1 = running_pa_correct_count[1] / running_pa_total_count[1]
+    overall_accuracy = running_oa_correct_count / running_oa_total_count
+    print('Inference Non-forest User Accuracy is: ', user_accuracy_0)
+    print('Inference Forest User Accuracy is: ', user_accuracy_1)
+    print('Inference Non-forest Producer Accuracy is: ', producer_accuracy_0)
+    print('Inference Forest Producer Accuracy is: ', producer_accuracy_1)
+    print('Inference Overall Accuracy is: ', overall_accuracy)
+
+    # print IoU
+    iou_0 = np.nanmean(np.array(running_iou[0]))
+    iou_1 = np.nanmean(np.array(running_iou[1]))
+    print('Inference Non-forest IoU is: ', iou_0)
+    print('Inference Forest IoU is: ', iou_1)
 
 
 # parse the arguments
