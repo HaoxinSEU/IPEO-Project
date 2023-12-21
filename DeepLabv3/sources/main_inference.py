@@ -14,10 +14,10 @@ from iou import iou
 
 # test dataset
 class TestDatasetSegmentation(torch.utils.data.dataset.Dataset):
-    def __init__(self, folder_path):
+    def __init__(self, folder_path, mode):
         super(TestDatasetSegmentation, self).__init__()
         # get all image filenames
-        self.img_files = glob.glob(os.path.join(folder_path, 'input', 'test', '*.*'))
+        self.img_files = glob.glob(os.path.join(folder_path, 'input', mode, '*.*'))
 
         # get all targets (GT)
         self.label_files = []
@@ -25,7 +25,7 @@ class TestDatasetSegmentation(torch.utils.data.dataset.Dataset):
             image_filename, _ = os.path.splitext(os.path.basename(img_path))
             image_filename = image_filename.split('_', 1)  # get image ID
             label_filename_with_ext = f"target_{image_filename[1]}.tif"
-            self.label_files.append(os.path.join(folder_path, 'target', 'test', label_filename_with_ext))
+            self.label_files.append(os.path.join(folder_path, 'target', mode, label_filename_with_ext))
 
         self.transforms = transforms.Compose([
             transforms.Resize(size=(512, 512), interpolation=transforms.InterpolationMode.NEAREST),
@@ -53,7 +53,7 @@ class TestDatasetSegmentation(torch.utils.data.dataset.Dataset):
         return len(self.img_files)
 
 
-def main(data_dir, weights_dir, num_classes):
+def main(data_dir, data_mode, weights_dir, num_classes):
     # detect if we have GPU or not
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -67,7 +67,7 @@ def main(data_dir, weights_dir, num_classes):
     model.eval()
 
     # load the test set
-    test_dataset = TestDatasetSegmentation(data_dir)
+    test_dataset = TestDatasetSegmentation(data_dir, data_mode)
     # we fix the batch size to 1, because the images have different sizes
     test_dataloader = torch.utils.data.DataLoader(test_dataset, batch_size=1, shuffle=False, num_workers=2)
 
@@ -121,11 +121,13 @@ def args_preprocess():
     parser.add_argument(
         "weights_dir", help='Specify the  directory where model weights shall be stored.')
     parser.add_argument(
+        "--data_mode", type=str, help="Specify the mode of the dataset (train, val or test)")
+    parser.add_argument(
         "--num_classes", default=3, type=int, help="Number of classes in the dataset, no-label should be included in the count")
     
     args = parser.parse_args()
 
-    main(args.data_dir, args.weights_dir, args.num_classes)
+    main(args.data_dir, args.data_mode, args.weights_dir, args.num_classes)
 
 
 if __name__ == "__main__":
