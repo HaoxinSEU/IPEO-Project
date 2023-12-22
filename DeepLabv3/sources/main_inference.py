@@ -67,10 +67,10 @@ def main(data_dir, data_mode, weights_dir, num_classes):
     # set the model in evaluation mode
     model.eval()
 
-    # load the test set
-    test_dataset = InferenceDataset(data_dir, data_mode)
+    # load the dataset
+    inference_dataset = InferenceDataset(data_dir, data_mode)
     # we fix the batch size to 1, because the images have different sizes
-    test_dataloader = torch.utils.data.DataLoader(test_dataset, batch_size=1, shuffle=False, num_workers=2)
+    inference_dataloader = torch.utils.data.DataLoader(inference_dataset, batch_size=1, shuffle=False, num_workers=2)
 
     print("Starting to do inference...")
 
@@ -83,7 +83,7 @@ def main(data_dir, data_mode, weights_dir, num_classes):
     running_oa_total_count = 0
 
     # Iterate over test set
-    for inputs, labels in tqdm(test_dataloader):
+    for inputs, labels in tqdm(inference_dataloader):
         inputs = inputs.to(device)
         labels = labels.to(device)
 
@@ -99,19 +99,19 @@ def main(data_dir, data_mode, weights_dir, num_classes):
 
         # IoU calculation
         for i in range(0, num_classes-1):
-            ious, _, _ = iou(preds, labels, i)
+            ious, _, _ = iou(preds, labels, i, num_classes-1)
             running_iou[i].append(ious)
 
         # accuracy calculation for each class, without no-label
         for i in range(0, num_classes-1):
-            ua_correct_count, ua_total_count = count_for_user_accuracy(preds, labels, i)
+            ua_correct_count, ua_total_count = count_for_user_accuracy(preds, labels, i, num_classes-1)
             pa_correct_count, pa_total_count = count_for_producer_accuracy(preds, labels, i)
             running_ua_correct_count[i] += ua_correct_count
             running_ua_total_count[i] += ua_total_count
             running_pa_correct_count[i] += pa_correct_count
             running_pa_total_count[i] += pa_total_count
 
-        oa_correct_count, oa_total_count = count_for_overall_accuracy(preds, labels)
+        oa_correct_count, oa_total_count = count_for_overall_accuracy(preds, labels, num_classes-1)
         running_oa_correct_count += oa_correct_count
         running_oa_total_count += oa_total_count
 

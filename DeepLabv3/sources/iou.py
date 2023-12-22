@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def iou(pred, target, cls = 0):
+def iou(pred, target, cls, ignored_class = 2):
     # do calculation for each prediction in the batch
     # pred: [batch_size, 1, H, W]
     # target: [batch_size, 1, H, W]
@@ -10,7 +10,7 @@ def iou(pred, target, cls = 0):
     pred_less_ratios = []
 
     for i in range(pred.shape[0]):
-        iou_ratio, pred_more_ratio, pred_less_ratio = iou_one_image(pred[i], target[i], cls)
+        iou_ratio, pred_more_ratio, pred_less_ratio = iou_one_image(pred[i], target[i], cls=cls, ignored_class=ignored_class)
         ious.append(iou_ratio)
         pred_more_ratios.append(pred_more_ratio)
         pred_less_ratios.append(pred_less_ratio)
@@ -18,12 +18,12 @@ def iou(pred, target, cls = 0):
     return np.array(ious), np.array(pred_more_ratios), np.array(pred_less_ratios)
 
     
-def iou_one_image(pred, target, cls = 0):  
+def iou_one_image(pred, target, cls, ignored_class = 2):  
     pred = pred.view(-1)
     target = target.view(-1)
     
     # remove the prediction that has no GT
-    pred[target==2] = 2
+    pred[target==ignored_class] = ignored_class
 
     pred_inds = pred == cls
     target_inds = target == cls

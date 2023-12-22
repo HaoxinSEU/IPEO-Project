@@ -65,7 +65,7 @@ def train_model(model, num_classes, dataloaders, criterion, optimizer, scheduler
 
                 # calculate IoU, pred_more, pred_less for each class
                 for cls in range(0, num_classes-1):
-                    ious, _, _ = iou(preds, labels, cls)
+                    ious, _, _ = iou(preds, labels, cls, num_classes-1)
                     running_ious[cls].append(ious)
 
             epoch_loss = running_loss / len(dataloaders[phase].dataset)
@@ -78,10 +78,12 @@ def train_model(model, num_classes, dataloaders, criterion, optimizer, scheduler
             running_iou_means = {}
 
             print('#############################################')
-            running_iou_means[0] = np.nanmean(np.concatenate(running_ious[0]))
-            running_iou_means[1] = np.nanmean(np.concatenate(running_ious[1]))
+            for i in range(0, num_classes-1):
+                running_iou_means[i] = np.nanmean(np.concatenate(running_ious[i]))
 
-            mIoU = (running_iou_means[0] + running_iou_means[1]) / 2
+            # calculate mIoU without no-label
+            mIoU = np.nanmean(np.array(list(running_iou_means.values())))
+
             print('{} Loss: {:.4f} Non-forest IoU: {:.4f} Forest IoU: {:.4f} mIoU: {:.4f}'.format(phase, epoch_loss, running_iou_means[0], running_iou_means[1], mIoU))
             print('#############################################')
 
@@ -102,7 +104,7 @@ def train_model(model, num_classes, dataloaders, criterion, optimizer, scheduler
 
     time_elapsed = time.time() - since
     print('Training complete in {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
-    print('Best val IoU: {:4f}'.format(best_IoU))
+    print('Best val forest IoU: {:4f}'.format(best_IoU))
 
     # load best model weights
     return best_model_state_dict, val_IoU_history
