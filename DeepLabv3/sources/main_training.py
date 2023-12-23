@@ -11,16 +11,19 @@ from custom_model import initialize_model
 from train import train_model
 
 
-def main(data_dir, dest_dir, num_classes, batch_size, num_epochs, keep_feature_extract, weight):
+def main(data_dir, dest_dir, num_classes, batch_size, num_epochs, keep_feature_extract, train_forest_balance, val_remove_no_forest, weight):
 
     print("Initializing Datasets and Dataloaders...")
 
     # Create training and validation datasets
     image_datasets = {x: DatasetSegmentation(data_dir, x) for x in ['train', 'val']}
     # Balance the training dataset
-    image_datasets['train'].balance_minority_class()
+    if train_forest_balance:
+        image_datasets['train'].balance_minority_class()
+    
     # Remove samples from the validation dataset that have no forest
-    image_datasets['val'].remove_no_forest_val()
+    if val_remove_no_forest:
+        image_datasets['val'].remove_no_forest_val()
     # Create training and validation dataloaders
     dataloaders_dict = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=batch_size, shuffle=True, num_workers=4) for x in ['train', 'val']}
 
@@ -85,6 +88,8 @@ def args_preprocess():
     parser.add_argument("--epochs", default=100, type=int, help="Number of epochs to train for")
     parser.add_argument("--batch_size", default=16, type=int, help="Batch size for training (change depending on how much memory you have)")
     parser.add_argument("--keep_feature_extract", action="store_true", help="Flag for feature extracting. When False, we finetune the whole model, when True we only update the reshaped layer params")
+    parser.add_argument("--train_forest_balance", action="store_true", help="Flag for balancing the training dataset. When True, we balance the training dataset")
+    parser.add_argument("--val_remove_no_forest", action="store_true", help="Flag for removing samples from the validation dataset that have no forest. When True, we remove samples from the validation dataset that have no forest")
     parser.add_argument('-w', action='append', type=float, help="Add more weight to some classes. If this argument is used, then it should be called as many times as there are classes (see --num_classes)")
 
     args = parser.parse_args()
@@ -95,7 +100,7 @@ def args_preprocess():
         for w in args.w:
             weight.append(w)
 
-    main(args.data_dir, args.dest_dir, args.num_classes, args.batch_size, args.epochs, args.keep_feature_extract, weight)
+    main(args.data_dir, args.dest_dir, args.num_classes, args.batch_size, args.epochs, args.keep_feature_extract, args.train_forest_balance, args.val_remove_no_forest, weight)
 
 
 if __name__ == '__main__':
