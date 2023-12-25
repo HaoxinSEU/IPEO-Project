@@ -67,7 +67,7 @@ Please check the instructions in each model's folder, which contains the details
 
 
 ## Results
-The IoU results of four models $\dagger$ are shown below:
+The IoU results of four models<sup>$\dagger$</sup> are shown below:
 
 |     Model      |   Forest  | Non-forest  |    mIoU   |
 | :------------: | :-------: | :---------: | :-------: |
