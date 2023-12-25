@@ -42,7 +42,7 @@ Alternatively, you can also run the script `main_training.py` from the terminal,
 
 
 ## Trained weights
-We provided the trained weights when using the dataset: __Forest_Deoldify_all__, which gives the best IoU. The trained weights can be found [here](). 
+We provided the trained weights when using the dataset: __Forest_Deoldify_all__, which gives the best IoU for the forest class. The trained weights can be found [here](https://drive.google.com/file/d/1DfVE0w9eHPQx3NEKwiGiNQ3g4ZR8fhNI/view?usp=sharing). 
 
 
 ## Inference
@@ -66,6 +66,6 @@ We get the IoU results on the test set:
 
 |    Dataset     |   Forest  | Non-forest  |    mIoU   |
 | :------------: | :-------: | :---------: | :-------: |
-|      Gray      |    0      |    0        |   0       |
-|  Deoldify_part |   59.95   |  **7794**   |   68.95   |
-|  Deoldify_all  | **61.68** |   77.63     | **69.65** |
+|      Gray      |   60.43   |  **79.49**  | **69.96** |
+|  Deoldify_part |   59.95   |   77.94     |   68.95   |
+|  Deoldify_all  | **61.68** |   77.63     |   69.65   |
