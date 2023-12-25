@@ -1,6 +1,6 @@
 # IPEO 2023 Project: Forest Classification for Swiss Alps
 
-This is the repository for our IPEO 2023 Project, which does historical forest mapping, i.e., semangtic segmentation on Swiss Alps.
+This is the repository for our IPEO 2023 Project, which does historical forest mapping, i.e., semantic segmentation on the Swiss Alps.
 
 In this project, we implement four different models to do this task, namely U-Net, DeepLabv3, SegFormer and Segment Anything (SAM).
 
