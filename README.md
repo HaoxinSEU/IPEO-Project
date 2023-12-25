@@ -36,7 +36,7 @@ This repository is organized as follows:
 
 
 ## Dataset
-The dataset contains both gray images and RGB images, and the ground truth contains two classes: non-forest (0) and forest (1). While some pixels are non-labelled, which are defined as 255 in the ground truth.
+The dataset contains both gray images and RGB images, and the ground truth contains two classes: non-forest (0) and forest (1). While some pixels are non-labeled, which are defined as 255 in the ground truth.
 
 We first remove images that have more than 30% non-labeled pixels in the training dataset (69 images), then convert grayscale images to RGB images in three different ways.
 - Directly convert all grayscale images to RGB images by `PIL.Image.convert('RGB')`, i.e. images are still gray but contain 3 channels; No operation on original RGB images;
@@ -48,18 +48,18 @@ You can find the processed datasets in these different ways [here](https://drive
 
 ## Data Preprocessing
 Since images are in different sizes, e.g., 256x256, 232x256, 256x232. So we use two different ways to make them the same size:
-- Zero-padding to pad all images to the same size of 256x256, and the ground truth for the padding area is non-labelled;
+- Zero-padding to pad all images to the same size of 256x256, and the ground truth for the padding area is non-labeled;
 - Directly resize all images and ground truth to 256x256, with interpolation mode NEAREST. 
 
 We also have data augmentation by applying random vertical and horizon flips when loading images in the training process.
 
 
 ## Class Imbalance
-To fight against class imbalance, we have the following methods on the training set and validation set respectively:
+To fight against class imbalance, we have the following methods for the training set and validation set respectively:
 - For the training set, we resample images with more forest labels. After resampling, the ratio between #non-forest pixel and #forest pixels is 1.22;
 - For the validation set, we remove the images with no forest labels.
 
-Depending on different models we implement, we determine to use these methods or not, in order to get the best performance.
+Depending on the different models we implement, we determine whether to use these methods or not, to get the best performance.
 
 
 ## Training and Inference on Each Model
@@ -80,4 +80,4 @@ The IoU results of four models $\dagger$ are shown below:
 
 
 ## Acknowledgement
-This project is based on some open-source code bases, such as U-Net, DeepLabv3, SegFormer, SAM. Huge thanks to all the projects.
+This project is based on some open-source code bases, such as U-Net, DeepLabv3, SegFormer, and SAM. Huge thanks to all the projects.
