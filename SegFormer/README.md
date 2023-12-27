@@ -24,7 +24,7 @@ We get the IoU results on the test set:
 
 |    Dataset     |   Forest  | Non-forest  |    mIoU   |
 | :------------: | :-------: | :---------: | :-------: |
-|      Gray      |   68.96   |    80.34    |           |
+|      Gray      |   68.96   |    80.34    |    80.46  |
 
 
 
