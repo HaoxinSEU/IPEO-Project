@@ -4,14 +4,13 @@ SegFormer is a Transformer-based framework for semantic segmentation that unifie
 
 ## Code Structure
 
-'''
+```
 - data
 
 - sources
   - segformer.ipynb  #
 
-
-'''
+```
 
 
 ## Training
