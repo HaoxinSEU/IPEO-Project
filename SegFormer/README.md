@@ -5,17 +5,27 @@ SegFormer is a Transformer-based framework for semantic segmentation that unifie
 ## Code Structure
 
 ```
-- data
+- segformer_training.ipynb   # for training model
+- segformer_inference.ipynb  # for inference 
+```
 
-- sources
-  - segformer.ipynb  #
+## Requirements
+Following moodle are required to run the codes
 
+```
+numpy
+torch
+matplotlib
+albumentations
+transformers
+sklearn
+datasets
 ```
 
 
 ## Training
 
-10 epochs, 10 mins per each on average
+10 epochs, 10 mins per each on average in Kaggle Notebook
 
 
 ## Results
