@@ -48,12 +48,16 @@ You can find the processed datasets in these different ways [here](https://drive
 
 
 ## Data Preprocessing
+### Deal with different image sizes
 Since images are in different sizes, e.g., 256x256, 232x256, 256x232. So we use two different ways to make them the same size:
 - Zero-padding to pad all images to the same size of 256x256, and the ground truth for the padding area is non-labeled;
 - Directly resize all images and ground truth to 256x256, with interpolation mode NEAREST. 
 
+### Data augmentation
 We also have data augmentation by applying random vertical and horizon flips when loading images in the training process.
 
+### Model-specific processing
+For different models, we have some specific processing, the details of this part are illustrated in the reports.
 
 ## Class Imbalance
 To fight against class imbalance, we have the following methods for the training set and validation set respectively:
