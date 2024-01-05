@@ -18,7 +18,7 @@ This repository is organized as follows:
 - DeepLabv3               # source code for DeepLabv3
   - sources
   - README.md
-- Gray2RGB                # source code for dataset processing
+- Preprocessing           # source code for dataset processing
   - ConvertFormat.ipynb
   - DeOldify.ipynb
   - RemoveImages.ipynb
