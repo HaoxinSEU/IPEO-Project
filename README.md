@@ -54,7 +54,7 @@ Since images are in different sizes, e.g., 256x256, 232x256, 256x232. So we use 
 - Directly resize all images and ground truth to 256x256, with interpolation mode NEAREST. 
 
 ### Data augmentation
-We also have data augmentation by applying random vertical and horizon flips when loading images in the training process.
+When training for some models, we also have data augmentation by applying random vertical and horizon flips when loading images in the training process.
 
 ### Model-specific processing
 For different models, we have some specific processing, the details of this part are illustrated in the reports.
