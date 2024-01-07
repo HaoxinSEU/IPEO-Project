@@ -59,7 +59,7 @@ When using the following hyperparameters:
 ```
 batch_size = 32
 epoch = 100
-initial_learning_rate = 1e-5
+initial_learning_rate = 1e-4
 weights = [1, 1.3, 0.4]
 ```
 We get the IoU results on the test set:
