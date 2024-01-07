@@ -59,7 +59,7 @@ When training for some models, we also have data augmentation by applying random
 ### Model-specific processing
 For different models, we have some specific processing, the details of this part are illustrated in the reports.
 
-## Class Imbalance
+### Class imbalance
 To fight against class imbalance, we have the following methods for the training set and validation set respectively:
 - For the training set, we resample images with more forest labels. After resampling, the ratio between #non-forest pixel and #forest pixels is 1.22;
 - For the validation set, we remove the images with no forest labels.
