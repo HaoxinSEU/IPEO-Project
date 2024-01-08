@@ -63,12 +63,11 @@ When using the following hyperparameters:
 batch_size = 4
 epoch = 10
 initial_learning_rate = 1e-5
-weights = [1, 1.3, 0.4]
 ```
 We get the IoU results on the test set:
 
 |    Dataset     |   Forest  | Non-forest  |    mIoU   |
 | :------------: | :-------: | :---------: | :-------: |
-|      Gray      |   60.43   |  **79.49**  | **69.96** |
+|      Gray      |   42.43   |   75.11     |   58.77   |     |
 |  Deoldify_part |   59.95   |   77.94     |   68.95   |
 |  Deoldify_all  | **61.68** |   77.63     |   69.65   |
