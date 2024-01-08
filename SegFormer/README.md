@@ -35,8 +35,6 @@ lr=0.00006
 epochs = 20
 ```
 
-## Inference
-
 
 ## Results
 
