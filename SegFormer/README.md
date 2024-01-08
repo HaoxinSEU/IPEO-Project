@@ -5,9 +5,10 @@ SegFormer is a Transformer-based framework for semantic segmentation that unifie
 ## Code Structure
 
 ```
-- training.ipynb   # training model
-- inference.ipynb  # inference
-- segformer_model  # containing three trained models
+- training.ipynb         # training model
+- inference.ipynb        # inference for one test image
+- inference_metric.ipynb # inference for evaluating metric
+- segformer_model        # containing three trained models
 ```
 
 ## Requirements
@@ -25,7 +26,16 @@ datasets
 
 ## Training
 
-learning rate 0.00006, 20 epochs, around 8 mins per each in Kaggle Notebook
+We download the pretrained model of SegFormer from HuggingFace. The detail can be found [here](https://huggingface.co/docs/transformers/main/model_doc/segformer). We use the MiT-b0 Model.
+
+Hyperparameters for training
+```
+batch_size = 8
+lr=0.00006
+epochs = 20
+```
+
+## Inference
 
 
 ## Results
@@ -34,7 +44,10 @@ We get the IoU results on the test set:
 
 |    Dataset     |   Forest  | Non-forest  |    mIoU   |
 | :------------: | :-------: | :---------: | :-------: |
-|      Gray      |   68.96   |    80.34    |    80.46  |
+|      Gray      |   73.13   |    89.04    |    81.08  |
+|      Gray      |   59.61   |    76.92    |    68.27  |
+|      Gray      |   72.60   |    90.97    |    81.79  |
+
 
 
 
