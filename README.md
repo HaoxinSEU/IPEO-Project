@@ -76,7 +76,7 @@ The IoU results of four models<sup>$\dagger$</sup> are shown below:
 
 |     Model      |   Forest  | Non-forest  |    mIoU   |
 | :------------: | :-------: | :---------: | :-------: |
-|      U-Net     |    42.43  |    75.11    | 58.77 |
+|      U-Net     |    44.17  |    75.17    | 59.67 |
 |    DeepLabv3   |    61.68  |    77.63    | 69.65 |
 |    SegFormer   |    **73.13**  |    **89.04**    | **81.08** |
 |       SAM      |    52.93  |    75.46    | 64.20 |
