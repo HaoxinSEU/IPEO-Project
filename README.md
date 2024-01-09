@@ -76,10 +76,10 @@ The IoU results of four models<sup>$\dagger$</sup> are shown below:
 
 |     Model      |   Forest  | Non-forest  |    mIoU   |
 | :------------: | :-------: | :---------: | :-------: |
-|      U-Net     |     0     |      0      |     0     |
-|    DeepLabv3   |   61.68   |   77.63     | **69.65** |
-|    SegFormer   |     0     |      0      |     0     |
-|       SAM      |     0     |      0      |     0     |
+|      U-Net     |    42.43  |    75.11    | **58.77** |
+|    DeepLabv3   |    61.68  |    77.63    | **69.65** |
+|    SegFormer   |    73.13  |    89.04    | **81.08** |
+|       SAM      |    52.93  |    75.46    | **64.20** |
 
 ($\dagger$: the results are the best IoU we can get with different processed datasets for these models.)
 
