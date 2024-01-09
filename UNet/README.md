@@ -15,11 +15,11 @@ This folder includes the source code to run forest mapping (semantic segmentatio
   - main_inference.py   # script to run inference
   - train.py            # training process
   - dataloader.py       # to load the images
-- unet
-  - unet_model.py       # UNet model
-  - unet_parts.py       # the different parts of the UNet model
-- utils
-  - dice_score.py       # to compute the dice score during the training
+  - unet
+    - unet_model.py       # UNet model
+    - unet_parts.py       # the different parts of the UNet model
+  - utils
+    - dice_score.py       # to compute the dice score during the training
 - README.md
 ```
 
