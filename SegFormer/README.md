@@ -7,10 +7,9 @@ SegFormer is a Transformer-based framework for semantic segmentation that unifie
 ```
 - training.ipynb         # training model
 - inference.ipynb        # inference for one test image
+- inference_images       # containing one image and ground truth for inference
 - inference_metric.ipynb # inference for evaluating metric
-
 - segformer_model        # containing three trained models
-- inference_images       # containing image for inference
 ```
 
 ## Requirements
