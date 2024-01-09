@@ -37,7 +37,7 @@ scikit-learn
 ```
 
 ## Trained weights
-We provide the trained weights when using _Gray_ dataset, as it gives the best IoU on forest. The weights can be found on [Google Drive](https://drive.google.com/drive/folders/1F9US5y1icSQR0qdV2zHNwm4Y99Lzuc_d?usp=drive_link)
+We provide the trained weights when using _Gray_ dataset, as it gives the best IoU on forest. The weights can be found on [Google Drive](https://drive.google.com/file/d/13vOUt-APUB0M54EFmrcmYx3LnVSHn5cr/view?usp=sharing)
 
 ## Results
 When using the following hyperparameters:
